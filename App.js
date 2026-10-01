@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 const products = [
   { name: 'Everyday Tote', category: 'Accessories', price: '$28', color: '#dce9df', mark: '01' },
@@ -9,13 +9,15 @@ const products = [
   { name: 'Ceramic Cup', category: 'Home', price: '$32', color: '#f0d9d4', mark: '04' },
 ];
 
-const categories = ['All', 'Accessories', 'Tech', 'Stationery', 'Home'];
+const categories = ['All', 'Saved', 'Accessories', 'Tech', 'Stationery', 'Home'];
 
 export default function App() {
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [savedProducts, setSavedProducts] = useState([]);
   const visibleProducts = products.filter((product) => {
-    const matchesCategory = activeCategory === 'All' || product.category === activeCategory;
+    const matchesCategory = activeCategory === 'All'
+      || (activeCategory === 'Saved' ? savedProducts.includes(product.name) : product.category === activeCategory);
     const matchesQuery = product.name.toLowerCase().includes(query.trim().toLowerCase());
     return matchesCategory && matchesQuery;
   });
@@ -77,6 +79,19 @@ export default function App() {
             <View style={[styles.productImage, { backgroundColor: product.color }]}>
               <Text style={styles.productMark}>{product.mark}</Text>
               <Text style={styles.productGlyph}>{product.category === 'Tech' ? '◉' : product.category === 'Home' ? '◌' : product.category === 'Stationery' ? '▤' : '⌁'}</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${savedProducts.includes(product.name) ? 'Remove' : 'Save'} ${product.name}${savedProducts.includes(product.name) ? ' from saved items' : ''}`}
+                accessibilityState={{ selected: savedProducts.includes(product.name) }}
+                onPress={() => setSavedProducts((current) => current.includes(product.name)
+                  ? current.filter((name) => name !== product.name)
+                  : [...current, product.name])}
+                style={styles.saveButton}
+              >
+                <Text style={[styles.saveIcon, savedProducts.includes(product.name) && styles.saveIconActive]}>
+                  {savedProducts.includes(product.name) ? '♥' : '♡'}
+                </Text>
+              </Pressable>
             </View>
             <Text style={styles.productCategory}>{product.category.toUpperCase()}</Text>
             <View style={styles.productMeta}>
@@ -119,6 +134,9 @@ const styles = StyleSheet.create({
   productImage: { aspectRatio: 0.92, justifyContent: 'space-between', padding: 12 },
   productMark: { color: '#536054', fontSize: 10, fontWeight: '700' },
   productGlyph: { color: '#1c3028', fontSize: 54, textAlign: 'center', fontWeight: '300' },
+  saveButton: { position: 'absolute', top: 8, right: 8, width: 34, height: 34, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f7f6f1' },
+  saveIcon: { color: '#1c3028', fontSize: 21, lineHeight: 25 },
+  saveIconActive: { color: '#ae573c' },
   productCategory: { color: '#9a5943', fontSize: 9, fontWeight: '800', letterSpacing: 1, marginTop: 10 },
   productMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 4, gap: 6 },
   productName: { color: '#1c3028', fontSize: 13, fontWeight: '600', flexShrink: 1 },
