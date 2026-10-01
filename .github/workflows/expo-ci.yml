@@ -28,3 +28,6 @@ jobs:
 
       - name: Run Expo diagnostics
         run: npx expo-doctor@latest
+
+      - name: Export Android bundle
+        run: npx expo export --platform android
